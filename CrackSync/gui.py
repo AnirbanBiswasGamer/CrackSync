@@ -1,13 +1,16 @@
 # gui.py
 import os
+import sys  # Add the missing import statement
 import shutil
 import tkinter as tk
-from tkinter import ttk, filedialog
+import tkinter.ttk as ttk
+from tkinter import filedialog
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from datetime import datetime
 import psutil
 import configparser
+import winreg
 
 class SyncHandler(FileSystemEventHandler):
     def __init__(self, source_folder, usb_drive, result_label):
@@ -83,7 +86,14 @@ class CrackSync:
         # Load configuration
         self.config_file = "config.ini"
 
+
         # Source Folders
+        self.startup_var = tk.BooleanVar(value=False)
+        self.startup_checkbox = ttk.Checkbutton(root, text="Start on Windows Startup", variable=self.startup_var, command=self.set_startup)
+        self.startup_checkbox.grid(row=6, column=0, columnspan=4, pady=10)
+
+        # Check if the app is set to start at Windows startup
+        self.check_startup()
         self.source_folders_label = ttk.Label(root, text="Select Source Folders:")
         self.source_folders_label.grid(row=0, column=0, sticky='w')
 
@@ -178,6 +188,32 @@ class CrackSync:
     def stop_monitoring(self, observer):
         observer.stop()
         observer.join()
+    def check_startup(self):
+        try:
+            app_path = os.path.abspath(sys.argv[0])
+            app_name = os.path.splitext(os.path.basename(app_path))[0]
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Run", 0, winreg.KEY_READ) as reg_key:
+                startup_value = winreg.QueryValueEx(reg_key, app_name)[0]
+                self.startup_var.set(True)
+        except FileNotFoundError:
+            pass
+    
+    def set_startup(self):
+        app_path = os.path.abspath(sys.argv[0])
+        app_name = os.path.splitext(os.path.basename(app_path))[0]
+
+        if self.startup_var.get():
+            try:
+                with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Run", 0, winreg.KEY_WRITE) as reg_key:
+                    winreg.SetValueEx(reg_key, app_name, 0, winreg.REG_SZ, app_path)
+            except Exception as e:
+                print(f"Error setting startup: {e}")
+        else:
+            try:
+                with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Run", 0, winreg.KEY_WRITE) as reg_key:
+                    winreg.DeleteValue(reg_key, app_name)
+            except Exception as e:
+                print(f"Error removing startup: {e}")
 
 # GUI setup
 if __name__ == "__main__":
