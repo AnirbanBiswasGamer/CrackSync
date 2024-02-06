@@ -1,5 +1,5 @@
 What is ihis?
-Just a symple windows app that copyes file from a directory to a drive. 
+Just a simple windows app that copyes file from a directory to a drive. 
 How is this usefull?
 I Dont Know.
 Is it safe?
