@@ -1,16 +1,36 @@
 # gui.py
 import os
-import sys  # Add the missing import statement
+import sys
 import shutil
 import tkinter as tk
 import tkinter.ttk as ttk
+import tkinter.messagebox as msg
 from tkinter import filedialog
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from datetime import datetime
+from PIL import ImageTk, Image
 import psutil
 import configparser
 import winreg
+
+
+class CrackSync:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Crack Sync")
+        try:
+            self.root.iconbitmap(r'D:\Softwere\Code\CrackSync\FancyPepe.ico')
+        except Exception as e:
+            msg.showerror("Path Error", "The path for the ico file is not correct or file doesn't exist")
+        try:
+            img = Image.open(r'D:\Softwere\Code\CrackSync\FancyPepe.png')
+            img = ImageTk.PhotoImage(img)
+            label = tk.Label(root, image = img)
+            label.image = img
+            label.grid(row=0, column=0)
+        except Exception as e:
+            msg.showerror("Path Error", "The path for the png file is not correct or file doesn't exist")
 
 class SyncHandler(FileSystemEventHandler):
     def __init__(self, source_folder, usb_drive, result_label):
@@ -216,6 +236,7 @@ class CrackSync:
                 print(f"Error removing startup: {e}")
 
 # GUI setup
+
 if __name__ == "__main__":
     root = tk.Tk()
     app = CrackSync(root)
